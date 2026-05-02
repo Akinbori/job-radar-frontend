@@ -1,4 +1,4 @@
-lexport default async function Page() {
+export default async function Page() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/opportunities`, {
     cache: "no-store",
   });
