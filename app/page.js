@@ -17,16 +17,17 @@ const freshJobs = rawJobs.filter(job => {
   return diffDays <= 14;
 });
 
-  const jobs = rawJobs
-    .filter((job) => job.job_url && !job.job_url.includes("example.com"))
-    .filter((job, index, arr) => {
-      const key = `${job.company}-${job.job_title}-${job.job_url}`;
-      return (
-        arr.findIndex(
-          (item) => `${item.company}-${item.job_title}-${item.job_url}` === key
-        ) === index
-      );
-    });
+  const jobs = freshJobs
+  .filter(job => job.job_url && !job.job_url.includes("example.com"))
+  .filter((job, index, arr) => {
+    const key = `${job.company}-${job.job_title}-${job.job_url}`;
+    return (
+      arr.findIndex(
+        (item) =>
+          `${item.company}-${item.job_title}-${item.job_url}` === key
+      ) === index
+    );
+  });
 
   return (
     <div style={{ padding: 20, fontFamily: "Arial, sans-serif" }}>
