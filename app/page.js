@@ -1,3 +1,3 @@
 export default function Page() {
-  return <div>Job Radar Dashboard Loading...</div>;
+  return <h1>Job Radar is live</h1>;
 }
