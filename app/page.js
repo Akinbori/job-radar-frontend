@@ -36,8 +36,12 @@ export default async function Page() {
       return dateB - dateA;
     });
 
-  const verifiedJobs = jobs.filter((job) => job.source_category === "verified");
-  const socialLeads = jobs.filter((job) => job.source_category !== "verified");
+  const verifiedJobs = jobs.filter(
+  (job) => job.source_category === "verified" || !job.source_category
+);
+  const socialLeads = jobs.filter(
+  (job) => job.source_category && job.source_category !== "verified"
+);
 
   return (
     <main style={styles.page}>
