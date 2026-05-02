@@ -6,11 +6,14 @@ export default function Page() {
   const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/opportunities`)
-      .then((res) => res.json())
-      .then((data) => setJobs(data))
-      .catch((err) => console.error(err));
-  }, []);
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/opportunities`)
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(data);
+      setJobs(data.opportunities || data);
+    })
+    .catch((err) => console.error(err));
+}, []);
 
   return (
     <div style={{ padding: 20 }}>
