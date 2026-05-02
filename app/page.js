@@ -1,3 +1,1 @@
-export default function Page() {
-  return <h1>Job Radar is live</h1>;
-}
+job-radar-backend-production.up.railway.app
