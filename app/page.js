@@ -5,6 +5,17 @@ export default async function Page() {
 
   const data = await res.json();
   const rawJobs = data.opportunities || data || [];
+  const now = new Date();
+
+const freshJobs = rawJobs.filter(job => {
+  const dateStr = job.posted_date || job.date_found;
+  if (!dateStr) return false;
+
+  const jobDate = new Date(dateStr);
+  const diffDays = (now - jobDate) / (1000 * 60 * 60 * 24);
+
+  return diffDays <= 14;
+});
 
   const jobs = rawJobs
     .filter((job) => job.job_url && !job.job_url.includes("example.com"))
