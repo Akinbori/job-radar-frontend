@@ -33,8 +33,22 @@ export default async function Page() {
           }}
         >
           <h2>{job.job_title}</h2>
-          <p><strong>{job.company}</strong></p>
-          <p>{job.location || "Location unknown"}</p>
+          <p>
+  {job.company && job.company !== "unknown"
+    ? job.company
+    : "Unknown (verify from post)"}
+</p>
+
+<p>
+  {job.location && job.location !== "unknown"
+    ? job.location
+    : "Location not specified"}
+</p>
+
+<p style={{ fontSize: 12, color: "gray" }}>
+  Source: {job.source}
+  {job.source === "reddit" && " • verify before applying"}
+</p>
           <p>Score: {job.score}</p>
           <p>{job.match_reason}</p>
 
