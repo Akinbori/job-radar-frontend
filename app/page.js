@@ -18,7 +18,10 @@ export default async function Page() {
       const jobDate = new Date(dateStr);
       const diffDays = (now - jobDate) / (1000 * 60 * 60 * 24);
 
-      return diffDays <= 14;
+      if (!job.posted_date) {
+  return diffDays <= 3;
+}
+return diffDays <= 14;
     })
     .filter((job, index, arr) => {
       const key = `${job.company}-${job.job_title}-${job.job_url}`.toLowerCase();
