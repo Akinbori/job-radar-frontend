@@ -1,3 +1,5 @@
+import RefreshButton from "./RefreshButton";
+
 export default async function Page() {
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/opportunities`, {
     cache: "no-store",
@@ -50,6 +52,7 @@ export default async function Page() {
         <p style={styles.subtitle}>
           {jobs.length} remote-friendly opportunities found from the last 14 days
         </p>
+  <RefreshButton />
       </section>
 
       <JobSection title="Verified Jobs" jobs={verifiedJobs} now={now} />
