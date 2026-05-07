@@ -3,19 +3,23 @@
 import { useState } from "react";
 import Controls from "./Controls";
 
-export default function JobBoard({ jobs, now }) {
+export default function JobBoard({ jobs = [], now }) {
   const [filters, setFilters] = useState({
     minScore: 0,
     days: 14,
   });
 
-  const nowDate = new Date(now);
+  const safeJobs = Array.isArray(jobs) ? jobs : [];
+  const nowDate = now ? new Date(now) : new Date();
 
-  const filtered = jobs.filter((job) => {
-    const jobDate = new Date(job.posted_date || job.date_found);
-    if (isNaN(jobDate)) return false;
+  const filtered = safeJobs.filter((job) => {
+    const dateValue = job.posted_date || job.date_found;
+    if (!dateValue) return false;
 
-    const diffDays = (nowDate - jobDate) / (1000 * 60 * 60 * 24);
+    const jobDate = new Date(dateValue);
+    if (Number.isNaN(jobDate.getTime())) return false;
+
+    const diffDays = (nowDate.getTime() - jobDate.getTime()) / (1000 * 60 * 60 * 24);
 
     if ((job.score || 0) < filters.minScore) return false;
     if (diffDays > filters.days) return false;
@@ -53,7 +57,7 @@ function JobSection({ title, jobs, now }) {
       ) : (
         <div style={styles.grid}>
           {jobs.map((job, i) => (
-            <JobCard key={`${job.id || job.job_url}-${i}`} job={job} now={now} />
+            <JobCard key={`${job.id || job.job_url || i}`} job={job} now={now} />
           ))}
         </div>
       )}
@@ -63,21 +67,23 @@ function JobSection({ title, jobs, now }) {
 
 function JobCard({ job, now }) {
   const jobDate = new Date(job.posted_date || job.date_found);
-  const daysAgo = Math.max(
-    0,
-    Math.floor((now - jobDate) / (1000 * 60 * 60 * 24))
-  );
+  const daysAgo = Number.isNaN(jobDate.getTime())
+    ? null
+    : Math.max(0, Math.floor((now.getTime() - jobDate.getTime()) / (1000 * 60 * 60 * 24)));
 
   const companyKnown = job.company && job.company.toLowerCase() !== "unknown";
   const locationKnown = job.location && job.location.toLowerCase() !== "unknown";
   const isVerified = job.source_category === "verified";
+  const url = job.job_url || job.application_url || "#";
 
   return (
     <article style={styles.card}>
       <div style={styles.badges}>
         <span style={styles.badge}>{job.source || "source unknown"}</span>
         <span style={styles.badge}>
-          {daysAgo === 0
+          {daysAgo === null
+            ? "date unknown"
+            : daysAgo === 0
             ? "posted today"
             : `posted ${daysAgo} day${daysAgo !== 1 ? "s" : ""} ago`}
         </span>
@@ -86,13 +92,13 @@ function JobCard({ job, now }) {
         </span>
       </div>
 
-      <h3 style={styles.jobTitle}>{job.job_title}</h3>
+      <h3 style={styles.jobTitle}>{job.job_title || "Untitled role"}</h3>
       <p style={styles.company}>{companyKnown ? job.company : "Company not detected yet"}</p>
       <p style={styles.meta}>{locationKnown ? job.location : "Location not specified"}</p>
-      <p style={styles.score}>Score: {job.score}</p>
-      <p style={styles.reason}>{job.match_reason}</p>
+      <p style={styles.score}>Score: {job.score || 0}</p>
+      <p style={styles.reason}>{job.match_reason || "Needs manual review"}</p>
 
-      <a href={job.job_url} target="_blank" rel="noreferrer" style={styles.button}>
+      <a href={url} target="_blank" rel="noreferrer" style={styles.button}>
         View job
       </a>
     </article>
