@@ -1,3 +1,4 @@
+import RefreshButton from "./RefreshButton";
 export default async function Page() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/opportunities`,
