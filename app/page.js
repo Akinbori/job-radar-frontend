@@ -17,6 +17,7 @@ export default async function Page() {
   return (
     <main style={{ padding: 40, fontFamily: "Arial, sans-serif" }}>
       <h1>Job Radar</h1>
+<RefreshButton />
 
       {jobs.map((job, i) => (
         <div
