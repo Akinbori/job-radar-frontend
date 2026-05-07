@@ -3,49 +3,49 @@
 import { useState } from "react";
 import Controls from "./Controls";
 
+function text(value, fallback = "") {
+  if (value === null || value === undefined) return fallback;
+  return String(value);
+}
+
 export default function JobBoard({ jobs = [], now }) {
-  const [filters, setFilters] = useState({
-    minScore: 0,
-    days: 14,
-  });
+  const [filters, setFilters] = useState({ minScore: 0, days: 14 });
 
   const safeJobs = Array.isArray(jobs) ? jobs : [];
-  const nowDate = now ? new Date(now) : new Date();
+  const nowMs = now ? new Date(now).getTime() : Date.now();
 
   const filtered = safeJobs.filter((job) => {
-    const dateValue = job.posted_date || job.date_found;
-    if (!dateValue) return false;
+    const dateValue = job?.posted_date || job?.date_found;
+    const jobMs = new Date(dateValue).getTime();
 
-    const jobDate = new Date(dateValue);
-    if (Number.isNaN(jobDate.getTime())) return false;
+    if (!dateValue || Number.isNaN(jobMs)) return false;
 
-    const diffDays = (nowDate.getTime() - jobDate.getTime()) / (1000 * 60 * 60 * 24);
+    const diffDays = (nowMs - jobMs) / (1000 * 60 * 60 * 24);
 
-    if ((job.score || 0) < filters.minScore) return false;
+    if (Number(job?.score || 0) < filters.minScore) return false;
     if (diffDays > filters.days) return false;
 
     return true;
   });
 
   const verifiedJobs = filtered.filter(
-    (job) => job.source_category === "verified" || !job.source_category
+    (job) => text(job?.source_category) === "verified" || !job?.source_category
   );
 
   const socialLeads = filtered.filter(
-    (job) => job.source_category && job.source_category !== "verified"
+    (job) => job?.source_category && text(job.source_category) !== "verified"
   );
 
   return (
     <>
       <Controls onChange={setFilters} />
-
-      <JobSection title="Verified Jobs" jobs={verifiedJobs} now={nowDate} />
-      <JobSection title="Social Leads to Verify" jobs={socialLeads} now={nowDate} />
+      <JobSection title="Verified Jobs" jobs={verifiedJobs} nowMs={nowMs} />
+      <JobSection title="Social Leads to Verify" jobs={socialLeads} nowMs={nowMs} />
     </>
   );
 }
 
-function JobSection({ title, jobs, now }) {
+function JobSection({ title, jobs, nowMs }) {
   return (
     <section style={styles.section}>
       <h2 style={styles.sectionTitle}>
@@ -57,7 +57,7 @@ function JobSection({ title, jobs, now }) {
       ) : (
         <div style={styles.grid}>
           {jobs.map((job, i) => (
-            <JobCard key={`${job.id || job.job_url || i}`} job={job} now={now} />
+            <JobCard key={text(job?.id || job?.job_url || i)} job={job} nowMs={nowMs} />
           ))}
         </div>
       )}
@@ -65,21 +65,25 @@ function JobSection({ title, jobs, now }) {
   );
 }
 
-function JobCard({ job, now }) {
-  const jobDate = new Date(job.posted_date || job.date_found);
-  const daysAgo = Number.isNaN(jobDate.getTime())
+function JobCard({ job, nowMs }) {
+  const jobMs = new Date(job?.posted_date || job?.date_found).getTime();
+  const daysAgo = Number.isNaN(jobMs)
     ? null
-    : Math.max(0, Math.floor((now.getTime() - jobDate.getTime()) / (1000 * 60 * 60 * 24)));
+    : Math.max(0, Math.floor((nowMs - jobMs) / (1000 * 60 * 60 * 24)));
 
-  const companyKnown = job.company && job.company.toLowerCase() !== "unknown";
-  const locationKnown = job.location && job.location.toLowerCase() !== "unknown";
-  const isVerified = job.source_category === "verified";
-  const url = job.job_url || job.application_url || "#";
+  const company = text(job?.company, "unknown");
+  const location = text(job?.location, "unknown");
+  const sourceCategory = text(job?.source_category);
+  const url = text(job?.job_url || job?.application_url || "#", "#");
+
+  const companyKnown = company.toLowerCase() !== "unknown";
+  const locationKnown = location.toLowerCase() !== "unknown";
+  const isVerified = sourceCategory === "verified";
 
   return (
     <article style={styles.card}>
       <div style={styles.badges}>
-        <span style={styles.badge}>{job.source || "source unknown"}</span>
+        <span style={styles.badge}>{text(job?.source, "source unknown")}</span>
         <span style={styles.badge}>
           {daysAgo === null
             ? "date unknown"
@@ -92,11 +96,11 @@ function JobCard({ job, now }) {
         </span>
       </div>
 
-      <h3 style={styles.jobTitle}>{job.job_title || "Untitled role"}</h3>
-      <p style={styles.company}>{companyKnown ? job.company : "Company not detected yet"}</p>
-      <p style={styles.meta}>{locationKnown ? job.location : "Location not specified"}</p>
-      <p style={styles.score}>Score: {job.score || 0}</p>
-      <p style={styles.reason}>{job.match_reason || "Needs manual review"}</p>
+      <h3 style={styles.jobTitle}>{text(job?.job_title, "Untitled role")}</h3>
+      <p style={styles.company}>{companyKnown ? company : "Company not detected yet"}</p>
+      <p style={styles.meta}>{locationKnown ? location : "Location not specified"}</p>
+      <p style={styles.score}>Score: {Number(job?.score || 0)}</p>
+      <p style={styles.reason}>{text(job?.match_reason, "Needs manual review")}</p>
 
       <a href={url} target="_blank" rel="noreferrer" style={styles.button}>
         View job
