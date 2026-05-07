@@ -11,17 +11,23 @@ export default function RefreshButton() {
     setMessage("");
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/scan`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
-      
-      if (!res.ok) throw new Error("Scan failed");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/scan`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Scan failed");
+      }
 
       const data = await res.json();
-      setMessage(`Found ${data.opportunity_count} fresh opportunities.`);
+
+      setMessage(
+        `Found ${data.opportunity_count || 0} fresh opportunities.`
+      );
+
       window.location.reload();
     } catch (err) {
       setMessage("Refresh failed. Try again.");
@@ -50,7 +56,13 @@ export default function RefreshButton() {
       </button>
 
       {message && (
-        <p style={{ marginTop: 10, color: "#555", fontSize: 14 }}>
+        <p
+          style={{
+            marginTop: 10,
+            color: "#555",
+            fontSize: 14,
+          }}
+        >
           {message}
         </p>
       )}
