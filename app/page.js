@@ -7,39 +7,47 @@ export default async function Page() {
   });
 
   const data = await res.json();
-  const rawJobs = data.opportunities || data || [];
+  const rawJobs = Array.isArray(data?.opportunities)
+    ? data.opportunities
+    : Array.isArray(data)
+    ? data
+    : [];
+
   const now = new Date();
 
   const jobs = rawJobs
-    .filter((job) => job.job_url && !job.job_url.includes("example.com"))
     .filter((job) => {
-      const dateStr = job.posted_date || job.date_found;
+      const url = String(job?.job_url || "");
+      return url && !url.includes("example.com");
+    })
+    .filter((job) => {
+      const dateStr = job?.posted_date || job?.date_found;
       if (!dateStr) return false;
 
       const jobDate = new Date(dateStr);
-      if (isNaN(jobDate)) return false;
+      if (Number.isNaN(jobDate.getTime())) return false;
 
-      const diffDays = (now - jobDate) / (1000 * 60 * 60 * 24);
+      const diffDays = (now.getTime() - jobDate.getTime()) / (1000 * 60 * 60 * 24);
 
-      if (!job.posted_date) {
+      if (!job?.posted_date) {
         return diffDays <= 7;
       }
 
       return diffDays <= 14;
     })
     .filter((job, index, arr) => {
-      const key = `${job.company}-${job.job_title}-${job.job_url}`.toLowerCase();
+      const key = `${job?.company || "unknown"}-${job?.job_title || "untitled"}-${job?.job_url || ""}`.toLowerCase();
 
       return (
-        arr.findIndex(
-          (item) =>
-            `${item.company}-${item.job_title}-${item.job_url}`.toLowerCase() === key
-        ) === index
+        arr.findIndex((item) => {
+          const itemKey = `${item?.company || "unknown"}-${item?.job_title || "untitled"}-${item?.job_url || ""}`.toLowerCase();
+          return itemKey === key;
+        }) === index
       );
     })
     .sort((a, b) => {
-      const dateA = new Date(a.posted_date || a.date_found);
-      const dateB = new Date(b.posted_date || b.date_found);
+      const dateA = new Date(a?.posted_date || a?.date_found).getTime();
+      const dateB = new Date(b?.posted_date || b?.date_found).getTime();
 
       return dateB - dateA;
     });
